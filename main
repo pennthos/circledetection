@@ -1,0 +1,48 @@
+from google.colab import files
+import cv2
+import numpy as np
+
+
+uploaded = files.upload()
+
+
+image_path = list(uploaded.keys())[0]
+
+
+image = cv2.imread(image_path)
+
+
+if image is not None:
+
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+
+    blurred_image = cv2.GaussianBlur(gray_image, (5, 5), 0)
+
+
+    circles = cv2.HoughCircles(blurred_image, cv2.HOUGH_GRADIENT, dp=1, minDist=50, param1=100, param2=30, minRadius=10, maxRadius=100)
+
+
+    if circles is not None:
+        circles = np.round(circles[0, :]).astype("int")
+        print("Bulunan çember sayısı:", len(circles))
+
+
+        for (x, y, r) in circles:
+            print(f"Çemberin merkezi: ({x}, {y}), Yarıçapı: {r}")
+
+
+        num_inside_circle = 0
+        for i in range(gray_image.shape[0]):
+            for j in range(gray_image.shape[1]):
+                for (center_x, center_y, radius) in circles:
+                    distance_to_center = np.sqrt((i - center_x) ** 2 + (j - center_y) ** 2)
+                    if distance_to_center <= radius:
+                        num_inside_circle += 1
+                        break
+        print("Çemberlerin içine düşen piksel sayısı:", num_inside_circle)
+
+    else:
+        print("Çember bulunamadı.")
+else:
+    print("Görüntü başarılı bir şekilde yüklenemedi.")
